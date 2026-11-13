@@ -7,7 +7,6 @@ Barebones markdown renderer in the terminal.
 ```
 gmd <filename>
 ```
-That was the usage section
 
 ## Setup
 
