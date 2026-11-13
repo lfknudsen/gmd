@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"fmt"
 	html2 "html"
 	"regexp"
 	"strconv"
@@ -18,12 +19,50 @@ func removeNewlines(s string) string {
 	return s
 }
 
+var links = make([]string, 0, 5)
+
+var superscripts = map[rune]rune{
+	'0': '⁰',
+	'1': '¹',
+	'2': '²',
+	'3': '³',
+	'4': '⁴',
+	'5': '⁵',
+	'6': '⁶',
+	'7': '⁷',
+	'8': '⁸',
+	'9': '⁹',
+}
+
+func formatLinks(list []string) string {
+	l := len(list)
+	maxIndexLength := len(strconv.Itoa(l))
+	formatString := fmt.Sprint("% " + fmt.Sprintf("%d", maxIndexLength) + "d")
+	for i, elem := range list {
+		list[i] = fmt.Sprintf(formatString, i+1) + ":     " + elem
+	}
+	return strings.Join(list, "\n")
+}
+
+func replaceLink(ahref string) string {
+	matches := rxLink.FindStringSubmatch(ahref)
+	links = append(links, matches[1])
+	referenceNumber := fmt.Sprint(len(links))
+	referenceNumber = strings.Map(func(r rune) rune { return superscripts[r] }, referenceNumber)
+
+	return fmt.Sprintf("\033[036m%s\033[001m%s\033[0m", matches[2], referenceNumber)
+}
+
+var rx = regexp.MustCompile("(?s)<p>.*?</p>")
+var rxLink = regexp.MustCompile(`(?s)<a href="([^"]*?)">([^<]*?)</a>`)
+
 func RenderMarkdown(buffer []byte) string {
 	md := markdown.New()
 	html := md.RenderToString(buffer)
 
-	rx := regexp.MustCompile("(?s)<p>.*?</p>")
 	html = rx.ReplaceAllStringFunc(html, removeNewlines)
+
+	html = rxLink.ReplaceAllStringFunc(html, replaceLink)
 
 	html = strings.Replace(html, "<p>", "", -1)
 	html = strings.Replace(html, "</p>", "", -1)
@@ -121,6 +160,10 @@ func RenderMarkdown(buffer []byte) string {
 	html = strings.Replace(html, "</h5>", "\033[0m", -1)
 
 	html = html2.UnescapeString(html)
+
+	if len(links) > 0 {
+		html = fmt.Sprintf("%s\n\n\033[036mLinks\033[0m:\n%s", html, formatLinks(links))
+	}
 
 	return html
 }
