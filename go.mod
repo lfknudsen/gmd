@@ -1,4 +1,4 @@
-module gmd
+module gitlab.com/lfknudsen/gmd
 
 go 1.27.3
 

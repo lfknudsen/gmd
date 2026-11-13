@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"gmd/pkg"
+	"gitlab.com/lfknudsen/gmd/pkg"
 )
 
 func printHelp(exitCode int) {
