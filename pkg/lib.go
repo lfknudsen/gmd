@@ -53,16 +53,29 @@ func replaceLink(ahref string) string {
 	return fmt.Sprintf("\033[004m\033[036m%s\033[0m\033[036m\033[001m%s\033[0m", matches[2], referenceNumber)
 }
 
+func replaceImg(html string) string {
+	matches := rxImg.FindStringSubmatch(html)
+	links = append(links, matches[1])
+	referenceNumber := fmt.Sprint(len(links))
+	referenceNumber = strings.Map(func(r rune) rune { return superscripts[r] }, referenceNumber)
+	altText := "Image"
+	if len(matches) == 3 {
+		altText = matches[2]
+	}
+	return fmt.Sprintf("[\033[036m%s\033[0m\033[036m\033[001m%s\033[0m]", altText, referenceNumber)
+}
+
 var rx = regexp.MustCompile("(?s)<p>.*?</p>")
 var rxLink = regexp.MustCompile(`(?s)<a href="([^"]*?)">([^<]*?)</a>`)
+var rxImg = regexp.MustCompile(`(?s)<img src="([^"]*?)" ?(?:alt="([^"]*?)")? ?/?>`)
 
 func RenderMarkdown(buffer []byte) string {
 	md := markdown.New()
 	html := md.RenderToString(buffer)
 
 	html = rx.ReplaceAllStringFunc(html, removeNewlines)
-
 	html = rxLink.ReplaceAllStringFunc(html, replaceLink)
+	html = rxImg.ReplaceAllStringFunc(html, replaceImg)
 
 	html = strings.Replace(html, "<p>", "", -1)
 	html = strings.Replace(html, "</p>", "", -1)
