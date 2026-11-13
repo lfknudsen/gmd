@@ -50,7 +50,7 @@ func replaceLink(ahref string) string {
 	referenceNumber := fmt.Sprint(len(links))
 	referenceNumber = strings.Map(func(r rune) rune { return superscripts[r] }, referenceNumber)
 
-	return fmt.Sprintf("\033[036m%s\033[001m%s\033[0m", matches[2], referenceNumber)
+	return fmt.Sprintf("\033[004m\033[036m%s\033[0m\033[036m\033[001m%s\033[0m", matches[2], referenceNumber)
 }
 
 var rx = regexp.MustCompile("(?s)<p>.*?</p>")
@@ -120,7 +120,7 @@ func RenderMarkdown(buffer []byte) string {
 
 	html = strings.Replace(html, "<pre>", "\n", -1)
 	html = strings.Replace(html, "</pre>", "", -1)
-	html = strings.Replace(html, "<code>", "\033[007m", -1)
+	html = strings.Replace(html, "<code>", "\033[002m\033[007m", -1)
 	html = strings.Replace(html, "</code>", "\033[0m", -1)
 
 	// Indent
